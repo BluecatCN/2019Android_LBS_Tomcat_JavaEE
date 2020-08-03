@@ -1,0 +1,111 @@
+package com.servlet.demo;
+package test;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+ 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+ 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.springframework.util.StringUtils;
+ 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+ 
+public class MobileFileUploadServlet extends HttpServlet{
+ 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+ 
+	private String FILE_UPLOAD_DIR = "FILE_UPLOAD_DIR";
+	private File tempDir;
+    private File saveDir;
+ 
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		System.out.println("get:"+req.toString());
+		this.doPost(req, resp);
+	}
+ 
+	public void init(ServletConfig config) throws ServletException {
+		
+        String saveDirStr = config.getInitParameter(FILE_UPLOAD_DIR);
+        if (StringUtils.isEmpty(saveDirStr)) {
+            saveDirStr = new StringBuffer(config.getServletContext().getRealPath("/")).append("/upload").toString();
+        }
+        saveDir = new File(saveDirStr);
+        saveDir.mkdir();
+        String tempDirStr = new StringBuffer(saveDirStr).append("/temp").toString();
+        tempDir = new File(tempDirStr);
+        tempDir.mkdir();
+    }
+ 
+    public void doPost(HttpServletRequest req, HttpServletResponse resp) 
+    		throws ServletException, UnsupportedEncodingException {
+    	
+    	req.setCharacterEncoding("UTF-8");
+    	
+        DiskFileItemFactory factory = new DiskFileItemFactory(DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD, tempDir);
+        ServletFileUpload upload = new ServletFileUpload(factory);
+        String client = req.getRemoteHost();
+        //return list
+        Collection<String> paths=new ArrayList<String>();
+        // Parse the request
+        try {
+            List<?> items = upload.parseRequest(req);
+            Iterator<?> iter = items.iterator();
+            int index = 0;
+            while (iter.hasNext()) {
+                FileItem item = (FileItem) iter.next();
+                if (!item.isFormField()) {
+                    String originalPath = item.getName();
+                    String originalFileName = originalPath.substring(originalPath.lastIndexOf('/') + 1);
+                    StringBuffer sbFile = new StringBuffer(saveDir.getPath());
+                    sbFile.append("/");
+                    sbFile.append(originalFileName);
+                    File uploadedFile = new File(sbFile.toString());
+                    uploadedFile.createNewFile();
+                    item.write(uploadedFile);
+                    paths.add(uploadedFile.getAbsolutePath());
+                }
+                else{
+                	String name = item.getFieldName();
+                	String val = item.getString("UTF-8");  
+                    System.out.println(name+"="+val);  
+                    //req.setAttribute(name, value);  
+                }
+            }
+            resp.setHeader("Accept", "application/json");
+            resp.setContentType("application/json");
+            PrintWriter out = resp.getWriter();
+            //Gson resp
+            GsonBuilder builder = new GsonBuilder();
+    		builder.setDateFormat(("yyyy-MM-dd HH:mm:ss"));
+    		builder.serializeNulls();
+    		Gson gson = builder.create();
+    		StringBuffer sb = new StringBuffer(gson.toJson(paths));
+            out.print(sb.toString());
+            //System.out.println(sb.toString());
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+ 
+}

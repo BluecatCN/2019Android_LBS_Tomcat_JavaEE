@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" version="3.1">
+  <display-name>LBS_Net</display-name>
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+    <welcome-file>index.htm</welcome-file>
+    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>default.html</welcome-file>
+    <welcome-file>default.htm</welcome-file>
+    <welcome-file>default.jsp</welcome-file>
+  </welcome-file-list>
+  
+  <servlet>
+  <servlet-name>LogUpload</servlet-name>
+  <servlet-class>com.servlet.demo.LogUpload</servlet-class>
+  <!-- 设置启动时加载,避免用户等待时间过长,通常写二以后的数字 -->
+  <load-on-startup>2</load-on-startup>
+  
+  </servlet>
+  
+  <servlet-mapping>
+  <servlet-name>LogUpload</servlet-name>
+  		<!-- 访问的优先级 完全匹配 > 目录匹配 > 扩展名匹配 -->
+		<!-- 完全匹配 -->
+  <url-pattern>/LogUpload</url-pattern>
+  </servlet-mapping>
+</web-app>
